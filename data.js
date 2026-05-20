@@ -1,4 +1,4 @@
-[
+const CHAMPIONSHIPS = [
   {
     "year": 2024,
     "group": null,
