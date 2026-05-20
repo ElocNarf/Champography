@@ -5,892 +5,183 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Championship Geography</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root {
-    --cream: #F5F0E8;
-    --cream-dark: #EDE6D6;
-    --cream-darker: #E0D5C0;
-    --red: #C41E3A;
-    --red-dark: #9B1530;
-    --red-light: #E8304F;
-    --charcoal: #1C1C1C;
-    --charcoal-mid: #2E2E2E;
-    --charcoal-light: #444;
-    --gold: #B8860B;
-    --text-muted: #7A6E5E;
-
-    --sport-baseball: #C41E3A;
-    --sport-football: #2B5329;
-    --sport-basketball: #D4500A;
-    --sport-hockey: #1A3A5C;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'IBM Plex Sans', sans-serif;
-    background: var(--cream);
-    color: var(--charcoal);
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  /* ── HEADER ── */
-  header {
-    background: var(--charcoal);
-    color: var(--cream);
-    padding: 0 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex-shrink: 0;
-    border-bottom: 3px solid var(--red);
-    height: 56px;
-  }
-
-  .header-left {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-  }
-
-  header h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.4rem;
-    font-weight: 900;
-    letter-spacing: 0.02em;
-    color: var(--cream);
-    white-space: nowrap;
-  }
-
-  header h1 span {
-    color: var(--red-light);
-  }
-
-  .header-subtitle {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-  /* ── TOOLBAR ── */
-  .toolbar {
-    background: var(--charcoal-mid);
-    display: flex;
-    align-items: center;
-    gap: 0;
-    padding: 0 16px;
-    flex-shrink: 0;
-    flex-wrap: wrap;
-    min-height: 44px;
-    border-bottom: 1px solid var(--charcoal-light);
-  }
-
-  .toolbar-group {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 16px 6px 0;
-    border-right: 1px solid var(--charcoal-light);
-    margin-right: 14px;
-  }
-
-  .toolbar-group:last-child {
-    border-right: none;
-    margin-right: 0;
-    margin-left: auto;
-  }
-
-  .toolbar-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
-
-  .sport-btn {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    border: 1px solid transparent;
-    border-radius: 2px;
-    cursor: pointer;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    transition: all 0.15s ease;
-    background: transparent;
-    color: #888;
-    white-space: nowrap;
-  }
-
-  .sport-btn .dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .sport-btn.active {
-    color: var(--cream);
-    border-color: currentColor;
-  }
-
-  .sport-btn[data-sport="All"].active { color: var(--cream); border-color: var(--cream-darker); background: rgba(255,255,255,0.08); }
-  .sport-btn[data-sport="Baseball"].active { color: #E05A5A; border-color: #E05A5A; background: rgba(196,30,58,0.15); }
-  .sport-btn[data-sport="Football"].active { color: #6DB36D; border-color: #6DB36D; background: rgba(43,83,41,0.2); }
-  .sport-btn[data-sport="Basketball"].active { color: #F0874A; border-color: #F0874A; background: rgba(212,80,10,0.15); }
-  .sport-btn[data-sport="Hockey"].active { color: #6AAAD4; border-color: #6AAAD4; background: rgba(26,58,92,0.25); }
-
-  .sport-btn .dot { background: currentColor; }
-
-  .year-range {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .year-range input[type=range] {
-    -webkit-appearance: none;
-    width: 100px;
-    height: 3px;
-    background: var(--charcoal-light);
-    border-radius: 2px;
-    outline: none;
-  }
-
-  .year-range input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 13px; height: 13px;
-    border-radius: 50%;
-    background: var(--red);
-    cursor: pointer;
-  }
-
-  .year-display {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.68rem;
-    color: var(--cream);
-    min-width: 80px;
-    text-align: center;
-    white-space: nowrap;
-  }
-
-  .view-toggle {
-    display: flex;
-    gap: 4px;
-  }
-
-  .view-btn {
-    padding: 4px 10px;
-    border: 1px solid var(--charcoal-light);
-    background: transparent;
-    color: #888;
-    cursor: pointer;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-radius: 2px;
-    transition: all 0.15s;
-  }
-
-  .view-btn.active {
-    background: var(--red);
-    color: var(--cream);
-    border-color: var(--red);
-  }
-
-  /* ── MAIN CONTENT ── */
-  .content {
-    flex: 1;
-    display: flex;
-    overflow: hidden;
-    position: relative;
-  }
-
-  /* ── MAP ── */
-  #map {
-    flex: 1;
-    z-index: 1;
-  }
-
-  /* Leaflet overrides */
-  .leaflet-container {
-    background: #2A3545;
-    font-family: 'IBM Plex Sans', sans-serif;
-  }
-
-  .leaflet-popup-content-wrapper {
-    background: var(--charcoal);
-    color: var(--cream);
-    border-radius: 4px;
-    border: 1px solid var(--red);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-    padding: 0;
-  }
-
-  .leaflet-popup-content {
-    margin: 0;
-    min-width: 220px;
-    max-width: 300px;
-  }
-
-  .leaflet-popup-tip {
-    background: var(--charcoal);
-  }
-
-  .leaflet-popup-close-button {
-    color: var(--text-muted) !important;
-    font-size: 18px !important;
-    padding: 6px 8px !important;
-  }
-
-  .leaflet-control-zoom a {
-    background-color: var(--charcoal-mid) !important;
-    color: var(--cream) !important;
-    border-color: var(--charcoal-light) !important;
-  }
-
-  .leaflet-control-zoom a:hover {
-    background-color: var(--red) !important;
-  }
-
-  .leaflet-control-attribution {
-    background: rgba(28,28,28,0.8) !important;
-    color: #555 !important;
-    font-size: 9px !important;
-  }
-
-  .leaflet-control-attribution a { color: #666 !important; }
-
-  /* ── POPUP CONTENT ── */
-  .popup-header {
-    padding: 12px 14px 10px;
-    border-bottom: 1px solid var(--charcoal-light);
-  }
-
-  .popup-city {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: var(--cream);
-    line-height: 1.2;
-  }
-
-  .popup-state {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-top: 2px;
-  }
-
-  .popup-stats {
-    display: flex;
-    gap: 0;
-    border-bottom: 1px solid var(--charcoal-light);
-  }
-
-  .popup-stat {
-    flex: 1;
-    padding: 8px 10px;
-    text-align: center;
-    border-right: 1px solid var(--charcoal-light);
-  }
-
-  .popup-stat:last-child { border-right: none; }
-
-  .popup-stat-num {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.3rem;
-    font-weight: 700;
-    line-height: 1;
-    color: var(--red-light);
-  }
-
-  .popup-stat-num.win-pct { color: var(--gold); }
-
-  .popup-stat-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.55rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text-muted);
-    margin-top: 3px;
-  }
-
-  .popup-teams {
-    padding: 8px 0;
-    max-height: 180px;
-    overflow-y: auto;
-  }
-
-  .popup-teams::-webkit-scrollbar { width: 3px; }
-  .popup-teams::-webkit-scrollbar-track { background: var(--charcoal); }
-  .popup-teams::-webkit-scrollbar-thumb { background: var(--red); }
-
-  .popup-team-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 14px;
-    border-left: 2px solid transparent;
-    transition: background 0.1s;
-  }
-
-  .popup-team-row:hover { background: rgba(255,255,255,0.04); }
-
-  .popup-team-row.win { border-left-color: var(--red-light); }
-  .popup-team-row.loss { border-left-color: var(--charcoal-light); }
-
-  .popup-year {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.62rem;
-    color: var(--text-muted);
-    width: 32px;
-    flex-shrink: 0;
-  }
-
-  .popup-team-name {
-    font-size: 0.75rem;
-    font-weight: 500;
-    flex: 1;
-    color: var(--cream);
-  }
-
-  .popup-sport-tag {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.55rem;
-    padding: 1px 5px;
-    border-radius: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    flex-shrink: 0;
-  }
-
-  .tag-Baseball { background: rgba(196,30,58,0.25); color: #E05A5A; }
-  .tag-Football { background: rgba(43,83,41,0.25); color: #6DB36D; }
-  .tag-Basketball { background: rgba(212,80,10,0.25); color: #F0874A; }
-  .tag-Hockey { background: rgba(26,58,92,0.35); color: #6AAAD4; }
-
-  .popup-result {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.6rem;
-    font-weight: 500;
-    flex-shrink: 0;
-  }
-
-  .popup-result.W { color: var(--red-light); }
-  .popup-result.L { color: #555; }
-
-  /* ── CITY MARKERS ── */
-  .city-marker {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    border: 2px solid rgba(245,240,232,0.9);
-    cursor: pointer;
-    font-family: 'IBM Plex Mono', monospace;
-    font-weight: 500;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    position: relative;
-  }
-
-  .city-marker:hover {
-    transform: scale(1.15);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-    z-index: 1000 !important;
-  }
-
-  /* ── TABLE VIEW ── */
-  #table-view {
-    display: none;
-    flex: 1;
-    overflow: hidden;
-    flex-direction: column;
-    background: var(--cream);
-  }
-
-  #table-view.visible {
-    display: flex;
-  }
-
-  .table-controls {
-    padding: 12px 20px;
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    background: var(--cream-dark);
-    border-bottom: 1px solid var(--cream-darker);
-    flex-shrink: 0;
-  }
-
-  .table-search {
-    flex: 1;
-    max-width: 320px;
-    padding: 7px 12px;
-    background: var(--cream);
-    border: 1px solid var(--cream-darker);
-    border-radius: 2px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--charcoal);
-    outline: none;
-  }
-
-  .table-search:focus { border-color: var(--red); }
-  .table-search::placeholder { color: var(--text-muted); }
-
-  .table-stats-bar {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    margin-left: auto;
-    white-space: nowrap;
-  }
-
-  .table-wrap {
-    flex: 1;
-    overflow: auto;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.82rem;
-  }
-
-  thead {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: var(--charcoal);
-    color: var(--cream);
-  }
-
-  thead th {
-    padding: 10px 14px;
-    text-align: left;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.62rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    white-space: nowrap;
-    cursor: pointer;
-    user-select: none;
-    border-right: 1px solid var(--charcoal-light);
-  }
-
-  thead th:hover { color: var(--red-light); }
-  thead th.sorted { color: var(--red-light); }
-
-  thead th .sort-arrow {
-    display: inline-block;
-    margin-left: 4px;
-    opacity: 0.4;
-    font-size: 0.6rem;
-  }
-
-  thead th.sorted .sort-arrow { opacity: 1; }
-
-  tbody tr {
-    border-bottom: 1px solid var(--cream-darker);
-    transition: background 0.1s;
-  }
-
-  tbody tr:hover { background: var(--cream-dark); }
-
-  tbody td {
-    padding: 8px 14px;
-    white-space: nowrap;
-    border-right: 1px solid var(--cream-darker);
-  }
-
-  tbody td:last-child { border-right: none; }
-
-  .td-year {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72rem;
-    color: var(--text-muted);
-  }
-
-  .td-team {
-    font-weight: 500;
-    color: var(--charcoal);
-  }
-
-  .td-result {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    font-weight: 500;
-  }
-
-  .td-result.win { color: var(--red); }
-  .td-result.loss { color: #999; }
-
-  .td-sport-pill {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 2px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .pill-Baseball { background: rgba(196,30,58,0.12); color: var(--red-dark); border: 1px solid rgba(196,30,58,0.25); }
-  .pill-Football { background: rgba(43,83,41,0.12); color: #2B5329; border: 1px solid rgba(43,83,41,0.25); }
-  .pill-Basketball { background: rgba(212,80,10,0.12); color: #A34000; border: 1px solid rgba(212,80,10,0.25); }
-  .pill-Hockey { background: rgba(26,58,92,0.12); color: #1A3A5C; border: 1px solid rgba(26,58,92,0.25); }
-
-  /* ── SIDE PANEL ── */
-  #side-panel {
-    width: 300px;
-    background: var(--charcoal);
-    border-left: 1px solid var(--charcoal-light);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    flex-shrink: 0;
-    transition: width 0.25s ease;
-  }
-
-  #side-panel.hidden {
-    width: 0;
-    border-left: none;
-  }
-
-  .panel-header {
-    padding: 14px 16px 12px;
-    border-bottom: 1px solid var(--charcoal-light);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
-  }
-
-  .panel-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 0.95rem;
-    color: var(--cream);
-  }
-
-  .panel-close {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 1rem;
-    padding: 2px 4px;
-    line-height: 1;
-  }
-
-  .panel-close:hover { color: var(--cream); }
-
-  .panel-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px 16px;
-  }
-
-  .panel-body::-webkit-scrollbar { width: 3px; }
-  .panel-body::-webkit-scrollbar-thumb { background: var(--red); }
-
-  .panel-section {
-    margin-bottom: 20px;
-  }
-
-  .panel-section-title {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.58rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--text-muted);
-    margin-bottom: 10px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--charcoal-light);
-  }
-
-  .stat-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px 0;
-    border-bottom: 1px solid rgba(68,68,68,0.3);
-  }
-
-  .stat-row-label {
-    font-size: 0.75rem;
-    color: #AAA;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .stat-row-value {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--cream);
-  }
-
-  .stat-row-value.highlight { color: var(--red-light); }
-
-  .sport-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-
-  .dot-Baseball { background: var(--sport-baseball); }
-  .dot-Football { background: var(--sport-football); }
-  .dot-Basketball { background: var(--sport-basketball); }
-  .dot-Hockey { background: var(--sport-hockey); }
-
-  .win-bar-wrap {
-    margin-top: 10px;
-  }
-
-  .win-bar-label {
-    display: flex;
-    justify-content: space-between;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--text-muted);
-    margin-bottom: 4px;
-  }
-
-  .win-bar-track {
-    height: 6px;
-    background: var(--charcoal-light);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-
-  .win-bar-fill {
-    height: 100%;
-    background: var(--red);
-    border-radius: 3px;
-    transition: width 0.4s ease;
-  }
-
-  .leaderboard-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 0;
-    border-bottom: 1px solid rgba(68,68,68,0.3);
-    cursor: pointer;
-    transition: background 0.1s;
-    padding-left: 4px;
-    border-radius: 2px;
-  }
-
-  .leaderboard-row:hover { background: rgba(255,255,255,0.04); }
-
-  .lb-rank {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    width: 18px;
-    text-align: right;
-    flex-shrink: 0;
-  }
-
-  .lb-name {
-    flex: 1;
-    font-size: 0.78rem;
-    color: var(--cream);
-    font-weight: 400;
-  }
-
-  .lb-wins {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72rem;
-    color: var(--red-light);
-    font-weight: 500;
-  }
-
-  .lb-pct {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    width: 38px;
-    text-align: right;
-  }
-
-  /* ── STATUS BAR ── */
-  .status-bar {
-    background: var(--charcoal);
-    padding: 4px 16px;
-    display: flex;
-    gap: 16px;
-    flex-shrink: 0;
-    border-top: 1px solid var(--charcoal-light);
-  }
-
-  .status-item {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--text-muted);
-    display: flex;
-    gap: 5px;
-    align-items: center;
-  }
-
-  .status-item strong {
-    color: var(--cream);
-    font-weight: 500;
-  }
-
-  /* ── LEGEND ── */
-  .map-legend {
-    position: absolute;
-    bottom: 28px;
-    left: 12px;
-    background: rgba(28,28,28,0.92);
-    border: 1px solid var(--charcoal-light);
-    border-radius: 3px;
-    padding: 10px 12px;
-    z-index: 500;
-    pointer-events: none;
-  }
-
-  .legend-title {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.55rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text-muted);
-    margin-bottom: 8px;
-  }
-
-  .legend-row {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    margin-bottom: 5px;
-  }
-
-  .legend-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    border: 1px solid rgba(255,255,255,0.2);
-  }
-
-  .legend-label {
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 0.68rem;
-    color: #CCC;
-  }
-
-  .legend-divider {
-    border: none;
-    border-top: 1px solid var(--charcoal-light);
-    margin: 7px 0;
-  }
-
-  .legend-scale {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .legend-scale-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-  }
-
-  .legend-scale-circle {
-    background: rgba(200,200,200,0.7);
-    border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.3);
-  }
-
-  .legend-scale-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.5rem;
-    color: var(--text-muted);
-  }
-
-  /* ── LOADING ── */
-  #loading {
-    position: absolute;
-    inset: 0;
-    background: var(--charcoal);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    gap: 16px;
-  }
-
-  #loading h2 {
-    font-family: 'Playfair Display', serif;
-    color: var(--cream);
-    font-size: 1.5rem;
-  }
-
-  #loading p {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--text-muted);
-    letter-spacing: 0.1em;
-  }
-
-  .loading-bar {
-    width: 200px;
-    height: 3px;
-    background: var(--charcoal-light);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .loading-fill {
-    height: 100%;
-    background: var(--red);
-    border-radius: 2px;
-    animation: loadpulse 1s ease-in-out infinite alternate;
-  }
-
-  @keyframes loadpulse {
-    from { width: 20%; }
-    to { width: 90%; }
-  }
-
-  /* ── MOBILE ── */
-  @media (max-width: 768px) {
-    header h1 { font-size: 1.1rem; }
-    .header-subtitle { display: none; }
-    .toolbar { gap: 4px; padding: 4px 10px; }
-    .toolbar-group { padding: 4px 10px 4px 0; margin-right: 8px; }
-    .sport-btn { padding: 3px 7px; font-size: 0.62rem; }
-    .toolbar-label { display: none; }
-    #side-panel { display: none; }
-    .map-legend { display: none; }
+    --cream: #F5F0E8; --cream-dark: #EDE6D6; --cream-darker: #E0D5C0;
+    --red: #C41E3A; --red-dark: #9B1530; --red-light: #E8304F;
+    --charcoal: #1C1C1C; --charcoal-mid: #2E2E2E; --charcoal-light: #444;
+    --gold: #B8860B; --text-muted: #7A6E5E;
+    --sport-baseball: #C41E3A; --sport-football: #2B5329;
+    --sport-basketball: #D4500A; --sport-hockey: #1A3A5C;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'IBM Plex Sans',sans-serif; background:var(--cream); color:var(--charcoal); height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+
+  /* HEADER */
+  header { background:var(--charcoal); color:var(--cream); padding:0 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-shrink:0; border-bottom:3px solid var(--red); height:56px; }
+  .header-left { display:flex; align-items:baseline; gap:12px; }
+  header h1 { font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:900; color:var(--cream); white-space:nowrap; }
+  header h1 span { color:var(--red-light); }
+  .header-subtitle { font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; white-space:nowrap; }
+
+  /* TOOLBAR */
+  .toolbar { background:var(--charcoal-mid); display:flex; align-items:center; padding:0 16px; flex-shrink:0; flex-wrap:wrap; min-height:44px; border-bottom:1px solid var(--charcoal-light); gap:0; }
+  .toolbar-group { display:flex; align-items:center; gap:6px; padding:6px 16px 6px 0; border-right:1px solid var(--charcoal-light); margin-right:14px; }
+  .toolbar-group:last-child { border-right:none; margin-right:0; margin-left:auto; }
+  .toolbar-label { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--text-muted); white-space:nowrap; }
+  .sport-btn { display:flex; align-items:center; gap:5px; padding:4px 10px; border:1px solid transparent; border-radius:2px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:0.7rem; font-weight:500; letter-spacing:0.05em; text-transform:uppercase; transition:all 0.15s; background:transparent; color:#888; white-space:nowrap; }
+  .sport-btn .dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; background:currentColor; }
+  .sport-btn[data-sport="All"].active { color:var(--cream); border-color:var(--cream-darker); background:rgba(255,255,255,0.08); }
+  .sport-btn[data-sport="Baseball"].active { color:#E05A5A; border-color:#E05A5A; background:rgba(196,30,58,0.15); }
+  .sport-btn[data-sport="Football"].active { color:#6DB36D; border-color:#6DB36D; background:rgba(43,83,41,0.2); }
+  .sport-btn[data-sport="Basketball"].active { color:#F0874A; border-color:#F0874A; background:rgba(212,80,10,0.15); }
+  .sport-btn[data-sport="Hockey"].active { color:#6AAAD4; border-color:#6AAAD4; background:rgba(26,58,92,0.25); }
+  .year-range { display:flex; align-items:center; gap:8px; }
+  .year-range input[type=range] { -webkit-appearance:none; width:100px; height:3px; background:var(--charcoal-light); border-radius:2px; outline:none; }
+  .year-range input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:13px; height:13px; border-radius:50%; background:var(--red); cursor:pointer; }
+  .year-display { font-family:'IBM Plex Mono',monospace; font-size:0.68rem; color:var(--cream); min-width:80px; text-align:center; white-space:nowrap; }
+  .view-btn { padding:4px 10px; border:1px solid var(--charcoal-light); background:transparent; color:#888; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; border-radius:2px; transition:all 0.15s; }
+  .view-btn.active { background:var(--red); color:var(--cream); border-color:var(--red); }
+
+  /* CONTENT */
+  .content { flex:1; display:flex; overflow:hidden; position:relative; }
+  #map { flex:1; z-index:1; }
+
+  /* OSM tile darkening */
+  .leaflet-container { background:#1a2030; font-family:'IBM Plex Sans',sans-serif; }
+  .map-tiles { filter: grayscale(1) brightness(0.55) contrast(1.1); }
+
+  /* ZOOM STAGE INDICATOR */
+  .zoom-badge { position:absolute; top:12px; left:50%; transform:translateX(-50%); z-index:500; background:rgba(28,28,28,0.85); border:1px solid var(--charcoal-light); border-radius:20px; padding:5px 14px; font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; pointer-events:none; transition:opacity 0.3s; }
+  .zoom-badge span { color:var(--cream); }
+
+  /* LEAFLET OVERRIDES */
+  .leaflet-popup-content-wrapper { background:var(--charcoal); color:var(--cream); border-radius:4px; border:1px solid var(--red); box-shadow:0 4px 24px rgba(0,0,0,0.5); padding:0; }
+  .leaflet-popup-content { margin:0; min-width:220px; max-width:300px; }
+  .leaflet-popup-tip { background:var(--charcoal); }
+  .leaflet-popup-close-button { color:var(--text-muted) !important; font-size:18px !important; padding:6px 8px !important; }
+  .leaflet-control-zoom a { background-color:var(--charcoal-mid) !important; color:var(--cream) !important; border-color:var(--charcoal-light) !important; }
+  .leaflet-control-zoom a:hover { background-color:var(--red) !important; }
+  .leaflet-control-attribution { background:rgba(28,28,28,0.7) !important; color:#444 !important; font-size:9px !important; }
+  .leaflet-control-attribution a { color:#555 !important; }
+
+  /* POPUP */
+  .popup-header { padding:12px 14px 10px; border-bottom:1px solid var(--charcoal-light); }
+  .popup-city { font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:700; color:var(--cream); line-height:1.2; }
+  .popup-state { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em; margin-top:2px; }
+  .popup-stats { display:flex; border-bottom:1px solid var(--charcoal-light); }
+  .popup-stat { flex:1; padding:8px 10px; text-align:center; border-right:1px solid var(--charcoal-light); }
+  .popup-stat:last-child { border-right:none; }
+  .popup-stat-num { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; line-height:1; color:var(--red-light); }
+  .popup-stat-num.pct { color:var(--gold); }
+  .popup-stat-label { font-family:'IBM Plex Mono',monospace; font-size:0.55rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-top:3px; }
+  .popup-teams { padding:8px 0; max-height:180px; overflow-y:auto; }
+  .popup-teams::-webkit-scrollbar { width:3px; }
+  .popup-teams::-webkit-scrollbar-thumb { background:var(--red); }
+  .popup-team-row { display:flex; align-items:center; gap:8px; padding:4px 14px; border-left:2px solid transparent; }
+  .popup-team-row.win { border-left-color:var(--red-light); }
+  .popup-team-row.loss { border-left-color:var(--charcoal-light); }
+  .popup-year { font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--text-muted); width:32px; flex-shrink:0; }
+  .popup-team-name { font-size:0.75rem; font-weight:500; flex:1; color:var(--cream); }
+  .popup-sport-tag { font-family:'IBM Plex Mono',monospace; font-size:0.55rem; padding:1px 5px; border-radius:2px; text-transform:uppercase; flex-shrink:0; }
+  .tag-Baseball { background:rgba(196,30,58,0.25); color:#E05A5A; }
+  .tag-Football { background:rgba(43,83,41,0.25); color:#6DB36D; }
+  .tag-Basketball { background:rgba(212,80,10,0.25); color:#F0874A; }
+  .tag-Hockey { background:rgba(26,58,92,0.35); color:#6AAAD4; }
+  .popup-result { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; font-weight:500; flex-shrink:0; }
+  .popup-result.W { color:var(--red-light); }
+  .popup-result.L { color:#555; }
+
+  /* TABLE */
+  #table-view { display:none; flex:1; overflow:hidden; flex-direction:column; background:var(--cream); }
+  #table-view.visible { display:flex; }
+  .table-controls { padding:12px 20px; display:flex; gap:12px; align-items:center; background:var(--cream-dark); border-bottom:1px solid var(--cream-darker); flex-shrink:0; }
+  .table-search { flex:1; max-width:320px; padding:7px 12px; background:var(--cream); border:1px solid var(--cream-darker); border-radius:2px; font-family:'IBM Plex Mono',monospace; font-size:0.75rem; color:var(--charcoal); outline:none; }
+  .table-search:focus { border-color:var(--red); }
+  .table-search::placeholder { color:var(--text-muted); }
+  .table-stats-bar { font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--text-muted); margin-left:auto; white-space:nowrap; }
+  .table-wrap { flex:1; overflow:auto; }
+  table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+  thead { position:sticky; top:0; z-index:10; background:var(--charcoal); color:var(--cream); }
+  thead th { padding:10px 14px; text-align:left; font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:500; text-transform:uppercase; letter-spacing:0.1em; white-space:nowrap; cursor:pointer; user-select:none; border-right:1px solid var(--charcoal-light); }
+  thead th:hover, thead th.sorted { color:var(--red-light); }
+  thead th .sa { display:inline-block; margin-left:4px; opacity:0.4; font-size:0.6rem; }
+  thead th.sorted .sa { opacity:1; }
+  tbody tr { border-bottom:1px solid var(--cream-darker); transition:background 0.1s; }
+  tbody tr:hover { background:var(--cream-dark); }
+  tbody td { padding:8px 14px; white-space:nowrap; border-right:1px solid var(--cream-darker); }
+  .td-year { font-family:'IBM Plex Mono',monospace; font-size:0.72rem; color:var(--text-muted); }
+  .td-team { font-weight:500; }
+  .td-result { font-family:'IBM Plex Mono',monospace; font-size:0.7rem; font-weight:500; }
+  .td-result.win { color:var(--red); }
+  .td-result.loss { color:#999; }
+  .td-pill { display:inline-block; padding:2px 8px; border-radius:2px; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; text-transform:uppercase; letter-spacing:0.05em; }
+  .pill-Baseball { background:rgba(196,30,58,0.1); color:var(--red-dark); border:1px solid rgba(196,30,58,0.2); }
+  .pill-Football { background:rgba(43,83,41,0.1); color:#2B5329; border:1px solid rgba(43,83,41,0.2); }
+  .pill-Basketball { background:rgba(212,80,10,0.1); color:#A34000; border:1px solid rgba(212,80,10,0.2); }
+  .pill-Hockey { background:rgba(26,58,92,0.1); color:#1A3A5C; border:1px solid rgba(26,58,92,0.2); }
+
+  /* SIDE PANEL */
+  #side-panel { width:280px; background:var(--charcoal); border-left:1px solid var(--charcoal-light); display:flex; flex-direction:column; overflow:hidden; flex-shrink:0; transition:width 0.25s; }
+  #side-panel.hidden { width:0; border-left:none; overflow:hidden; }
+  .panel-header { padding:14px 16px 12px; border-bottom:1px solid var(--charcoal-light); display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
+  .panel-title { font-family:'Playfair Display',serif; font-size:0.95rem; color:var(--cream); }
+  .panel-close { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1rem; padding:2px 4px; }
+  .panel-close:hover { color:var(--cream); }
+  .panel-body { flex:1; overflow-y:auto; padding:12px 16px; }
+  .panel-body::-webkit-scrollbar { width:3px; }
+  .panel-body::-webkit-scrollbar-thumb { background:var(--red); }
+  .panel-section { margin-bottom:20px; }
+  .panel-section-title { font-family:'IBM Plex Mono',monospace; font-size:0.58rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--text-muted); margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--charcoal-light); }
+  .stat-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid rgba(68,68,68,0.3); }
+  .stat-row-label { font-size:0.75rem; color:#AAA; display:flex; align-items:center; gap:6px; }
+  .stat-row-value { font-family:'IBM Plex Mono',monospace; font-size:0.75rem; font-weight:500; color:var(--cream); }
+  .stat-row-value.hi { color:var(--red-light); }
+  .sport-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .dot-Baseball { background:var(--sport-baseball); } .dot-Football { background:var(--sport-football); }
+  .dot-Basketball { background:var(--sport-basketball); } .dot-Hockey { background:var(--sport-hockey); }
+  .win-bar-wrap { margin-top:10px; }
+  .win-bar-label { display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; color:var(--text-muted); margin-bottom:4px; }
+  .win-bar-track { height:6px; background:var(--charcoal-light); border-radius:3px; overflow:hidden; }
+  .win-bar-fill { height:100%; background:var(--red); border-radius:3px; transition:width 0.4s; }
+  .lb-row { display:flex; align-items:center; gap:8px; padding:5px 4px; border-bottom:1px solid rgba(68,68,68,0.3); cursor:pointer; border-radius:2px; }
+  .lb-row:hover { background:rgba(255,255,255,0.04); }
+  .lb-rank { font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--text-muted); width:18px; text-align:right; flex-shrink:0; }
+  .lb-name { flex:1; font-size:0.78rem; color:var(--cream); }
+  .lb-wins { font-family:'IBM Plex Mono',monospace; font-size:0.72rem; color:var(--red-light); font-weight:500; }
+  .lb-pct { font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--text-muted); width:38px; text-align:right; }
+
+  /* STATUS BAR */
+  .status-bar { background:var(--charcoal); padding:4px 16px; display:flex; gap:16px; flex-shrink:0; border-top:1px solid var(--charcoal-light); }
+  .status-item { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; color:var(--text-muted); display:flex; gap:5px; align-items:center; }
+  .status-item strong { color:var(--cream); font-weight:500; }
+
+  /* LEGEND */
+  .map-legend { position:absolute; bottom:30px; left:12px; background:rgba(20,20,20,0.9); border:1px solid var(--charcoal-light); border-radius:3px; padding:10px 12px; z-index:500; pointer-events:none; min-width:140px; }
+  .legend-title { font-family:'IBM Plex Mono',monospace; font-size:0.55rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:7px; }
+  .legend-row { display:flex; align-items:center; gap:7px; margin-bottom:5px; }
+  .legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .legend-label { font-size:0.68rem; color:#CCC; }
+  .legend-hr { border:none; border-top:1px solid var(--charcoal-light); margin:7px 0; }
+  .legend-stage { font-family:'IBM Plex Mono',monospace; font-size:0.58rem; color:var(--text-muted); margin-bottom:4px; padding:3px 0; border-bottom:1px solid rgba(68,68,68,0.3); }
+  .legend-stage span { color:#AAA; }
+
+  /* LOADING */
+  #loading { position:absolute; inset:0; background:var(--charcoal); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; gap:16px; }
+  #loading h2 { font-family:'Playfair Display',serif; color:var(--cream); font-size:1.5rem; }
+  #loading p { font-family:'IBM Plex Mono',monospace; font-size:0.7rem; color:var(--text-muted); letter-spacing:0.1em; }
+  .loading-bar { width:200px; height:3px; background:var(--charcoal-light); border-radius:2px; overflow:hidden; }
+  .loading-fill { height:100%; background:var(--red); border-radius:2px; animation:lp 1s ease-in-out infinite alternate; }
+  @keyframes lp { from{width:20%} to{width:90%} }
+
+  @media(max-width:768px) {
+    header h1 { font-size:1.1rem; } .header-subtitle { display:none; }
+    .toolbar { gap:4px; padding:4px 10px; } .toolbar-group { padding:4px 10px 4px 0; margin-right:8px; }
+    .sport-btn { padding:3px 7px; font-size:0.62rem; } .toolbar-label { display:none; }
+    #side-panel { display:none; } .map-legend { display:none; }
   }
 </style>
 </head>
@@ -916,21 +207,11 @@
 <div class="toolbar">
   <div class="toolbar-group">
     <span class="toolbar-label">Sport</span>
-    <button class="sport-btn active" data-sport="All" onclick="setSport('All')">
-      <span class="dot" style="background:#AAA"></span> All
-    </button>
-    <button class="sport-btn" data-sport="Baseball" onclick="setSport('Baseball')">
-      <span class="dot"></span> Baseball
-    </button>
-    <button class="sport-btn" data-sport="Football" onclick="setSport('Football')">
-      <span class="dot"></span> Football
-    </button>
-    <button class="sport-btn" data-sport="Basketball" onclick="setSport('Basketball')">
-      <span class="dot"></span> Basketball
-    </button>
-    <button class="sport-btn" data-sport="Hockey" onclick="setSport('Hockey')">
-      <span class="dot"></span> Hockey
-    </button>
+    <button class="sport-btn active" data-sport="All" onclick="setSport('All')"><span class="dot" style="background:#AAA"></span>All</button>
+    <button class="sport-btn" data-sport="Baseball" onclick="setSport('Baseball')"><span class="dot"></span>Baseball</button>
+    <button class="sport-btn" data-sport="Football" onclick="setSport('Football')"><span class="dot"></span>Football</button>
+    <button class="sport-btn" data-sport="Basketball" onclick="setSport('Basketball')"><span class="dot"></span>Basketball</button>
+    <button class="sport-btn" data-sport="Hockey" onclick="setSport('Hockey')"><span class="dot"></span>Hockey</button>
   </div>
   <div class="toolbar-group">
     <span class="toolbar-label">Years</span>
@@ -941,14 +222,14 @@
     </div>
   </div>
   <div class="toolbar-group" style="margin-left:auto;border-right:none;">
-    <button class="sport-btn" id="panel-toggle-btn" onclick="togglePanel()" style="color:#AAA">
-      ◧ Stats Panel
-    </button>
+    <button class="sport-btn" onclick="togglePanel()" style="color:#AAA">◧ Stats</button>
   </div>
 </div>
 
 <div class="content">
-  <div id="map"></div>
+  <div id="map">
+    <div class="zoom-badge" id="zoom-badge">Zoom: <span id="zoom-label">Country View</span></div>
+  </div>
 
   <div id="table-view">
     <div class="table-controls">
@@ -956,17 +237,15 @@
       <span class="table-stats-bar" id="table-stats-bar"></span>
     </div>
     <div class="table-wrap">
-      <table id="data-table">
-        <thead>
-          <tr>
-            <th onclick="sortTable('year')" class="sorted">Year <span class="sort-arrow" id="sort-year">↓</span></th>
-            <th onclick="sortTable('team')">Team <span class="sort-arrow" id="sort-team">↕</span></th>
-            <th onclick="sortTable('city')">City <span class="sort-arrow" id="sort-city">↕</span></th>
-            <th onclick="sortTable('state')">State <span class="sort-arrow" id="sort-state">↕</span></th>
-            <th onclick="sortTable('sport')">Sport <span class="sort-arrow" id="sort-sport">↕</span></th>
-            <th onclick="sortTable('win')">Result <span class="sort-arrow" id="sort-win">↕</span></th>
-          </tr>
-        </thead>
+      <table>
+        <thead><tr>
+          <th onclick="sortTable('year')" class="sorted">Year<span class="sa" id="sa-year">↓</span></th>
+          <th onclick="sortTable('team')">Team<span class="sa" id="sa-team">↕</span></th>
+          <th onclick="sortTable('city')">City<span class="sa" id="sa-city">↕</span></th>
+          <th onclick="sortTable('state')">State<span class="sa" id="sa-state">↕</span></th>
+          <th onclick="sortTable('sport')">Sport<span class="sa" id="sa-sport">↕</span></th>
+          <th onclick="sortTable('win')">Result<span class="sa" id="sa-win">↕</span></th>
+        </tr></thead>
         <tbody id="table-body"></tbody>
       </table>
     </div>
@@ -977,55 +256,65 @@
       <span class="panel-title">Overview</span>
       <button class="panel-close" onclick="togglePanel()">✕</button>
     </div>
-    <div class="panel-body" id="panel-body">
-      <!-- filled by JS -->
-    </div>
+    <div class="panel-body" id="panel-body"></div>
   </div>
 </div>
 
 <div class="status-bar">
-  <span class="status-item">Showing <strong id="status-count">—</strong> appearances</span>
-  <span class="status-item"><strong id="status-wins">—</strong> championships</span>
-  <span class="status-item"><strong id="status-cities">—</strong> cities</span>
-  <span class="status-item" id="status-extra"></span>
+  <span class="status-item">Showing <strong id="st-count">—</strong> appearances</span>
+  <span class="status-item"><strong id="st-wins">—</strong> championships</span>
+  <span class="status-item"><strong id="st-cities">—</strong> cities</span>
+  <span class="status-item" id="st-extra"></span>
 </div>
 
-<div class="map-legend">
-  <div class="legend-title">Sport</div>
+<div class="map-legend" id="map-legend">
+  <div class="legend-title">Sport Color</div>
   <div class="legend-row"><span class="legend-dot" style="background:var(--sport-baseball)"></span><span class="legend-label">Baseball</span></div>
   <div class="legend-row"><span class="legend-dot" style="background:var(--sport-football)"></span><span class="legend-label">Football</span></div>
   <div class="legend-row"><span class="legend-dot" style="background:var(--sport-basketball)"></span><span class="legend-label">Basketball</span></div>
   <div class="legend-row"><span class="legend-dot" style="background:var(--sport-hockey)"></span><span class="legend-label">Hockey</span></div>
-  <hr class="legend-divider">
-  <div class="legend-title">Circle Size = Appearances</div>
-  <div class="legend-scale">
-    <div class="legend-scale-item"><div class="legend-scale-circle" style="width:8px;height:8px;"></div><span class="legend-scale-label">1</span></div>
-    <div class="legend-scale-item"><div class="legend-scale-circle" style="width:14px;height:14px;"></div><span class="legend-scale-label">10</span></div>
-    <div class="legend-scale-item"><div class="legend-scale-circle" style="width:22px;height:22px;"></div><span class="legend-scale-label">50+</span></div>
-  </div>
+  <div class="legend-row"><span class="legend-dot" style="background:#8B7355"></span><span class="legend-label">Multi-sport</span></div>
+  <hr class="legend-hr">
+  <div class="legend-title">Zoom Stages</div>
+  <div class="legend-stage">Zoom 3–4: <span>Country</span></div>
+  <div class="legend-stage">Zoom 5–6: <span>State / Province</span></div>
+  <div class="legend-stage">Zoom 7+: <span>City</span></div>
 </div>
 
 <script src="data.js"></script>
 <script>
 // ── STATE ──
-let activeSport = 'All';
-let yearStart = 1876;
-let yearEnd = 2024;
-let currentView = 'map';
-let panelOpen = true;
-let sortCol = 'year';
-let sortDir = -1; // -1 = desc
-let map, markersLayer;
+let activeSport = 'All', yearStart = 1876, yearEnd = 2024;
+let currentView = 'map', panelOpen = true;
+let sortCol = 'year', sortDir = -1;
+let map, markersLayer, stateLayer, countryLayer;
+let currentZoom = 4;
 
-// ── SPORT COLORS ──
 const SPORT_COLORS = {
-  Baseball:   { fill: '#C41E3A', border: '#9B1530' },
-  Football:   { fill: '#2B5329', border: '#1A3520' },
-  Basketball: { fill: '#D4500A', border: '#9B3A07' },
-  Hockey:     { fill: '#1A3A5C', border: '#0F2240' },
+  Baseball:   '#C41E3A', Football:   '#2B5329',
+  Basketball: '#D4500A', Hockey:     '#1A3A5C',
 };
+const MULTI_COLOR = '#8B7355';
+const CA_PROVINCES = new Set(['Ontario','Quebec','British Columbia','Alberta','Manitoba','Saskatchewan','Nova Scotia','New Brunswick','Prince Edward Island','Newfoundland and Labrador','Newfoundland']);
 
-const MULTI_COLOR = '#8B7355'; // brownish for multi-sport cities
+// State name → US state abbreviation for matching TopoJSON
+const STATE_NAME_MAP = {
+  'Alabama':'Alabama','Alaska':'Alaska','Arizona':'Arizona','Arkansas':'Arkansas',
+  'California':'California','Colorado':'Colorado','Connecticut':'Connecticut',
+  'Delaware':'Delaware','Florida':'Florida','Georgia':'Georgia','Hawaii':'Hawaii',
+  'Idaho':'Idaho','Illinois':'Illinois','Indiana':'Indiana','Iowa':'Iowa',
+  'Kansas':'Kansas','Kentucky':'Kentucky','Louisiana':'Louisiana','Maine':'Maine',
+  'Maryland':'Maryland','Massachusetts':'Massachusetts','Michigan':'Michigan',
+  'Minnesota':'Minnesota','Mississippi':'Mississippi','Missouri':'Missouri',
+  'Montana':'Montana','Nebraska':'Nebraska','Nevada':'Nevada','New Hampshire':'New Hampshire',
+  'New Jersey':'New Jersey','New Mexico':'New Mexico','New York':'New York',
+  'North Carolina':'North Carolina','North Dakota':'North Dakota','Ohio':'Ohio',
+  'Oklahoma':'Oklahoma','Oregon':'Oregon','Pennsylvania':'Pennsylvania',
+  'Rhode Island':'Rhode Island','South Carolina':'South Carolina','South Dakota':'South Dakota',
+  'Tennessee':'Tennessee','Texas':'Texas','Utah':'Utah','Vermont':'Vermont',
+  'Virginia':'Virginia','Washington':'Washington','West Virginia':'West Virginia',
+  'Wisconsin':'Wisconsin','Wyoming':'Wyoming','Washington D.C.':'District of Columbia'
+};
 
 // ── FILTER ──
 function getFiltered() {
@@ -1035,346 +324,464 @@ function getFiltered() {
   );
 }
 
-// ── GROUP BY CITY ──
 function groupByCity(records) {
-  const cities = {};
+  const m = {};
   for (const r of records) {
-    const key = r.city;
-    if (!cities[key]) {
-      cities[key] = {
-        city: r.city,
-        state: r.state,
-        lat: r.lat,
-        lng: r.lng,
-        wins: 0, losses: 0,
-        sports: new Set(),
-        records: []
-      };
-    }
-    cities[key].wins += r.win;
-    cities[key].losses += r.lose;
-    cities[key].sports.add(r.sport);
-    cities[key].records.push(r);
+    if (!m[r.city]) m[r.city] = { city:r.city, state:r.state, lat:r.lat, lng:r.lng, wins:0, losses:0, sports:new Set(), records:[] };
+    m[r.city].wins += r.win; m[r.city].losses += r.lose;
+    m[r.city].sports.add(r.sport); m[r.city].records.push(r);
   }
-  return Object.values(cities);
+  return Object.values(m);
 }
 
-// ── MARKER SIZE ──
-function markerSize(appearances) {
-  if (appearances <= 1) return 16;
-  if (appearances <= 3) return 20;
-  if (appearances <= 7) return 26;
-  if (appearances <= 15) return 32;
-  if (appearances <= 30) return 40;
-  if (appearances <= 60) return 50;
-  return 60;
+function groupByState(records) {
+  const m = {};
+  for (const r of records) {
+    const s = r.state;
+    if (!m[s]) m[s] = { state:s, wins:0, losses:0, sports:new Set(), cities:new Set() };
+    m[s].wins += r.win; m[s].losses += r.lose;
+    m[s].sports.add(r.sport); m[s].cities.add(r.city);
+  }
+  return m;
 }
 
-// ── MARKER COLOR ──
-function markerColor(sports) {
-  const arr = Array.from(sports);
-  if (arr.length === 1) return SPORT_COLORS[arr[0]];
-  return { fill: MULTI_COLOR, border: '#6B5540' };
+function groupByCountry(records) {
+  const m = { USA:{wins:0,losses:0,sports:new Set(),states:new Set()}, Canada:{wins:0,losses:0,sports:new Set(),states:new Set()} };
+  for (const r of records) {
+    const c = CA_PROVINCES.has(r.state) ? 'Canada' : 'USA';
+    m[c].wins += r.win; m[c].losses += r.lose;
+    m[c].sports.add(r.sport); m[c].states.add(r.state);
+  }
+  return m;
 }
 
-// ── WIN PCT ──
-function winPct(wins, losses) {
-  const total = wins + losses;
-  if (total === 0) return 0;
-  return Math.round((wins / total) * 100);
+// ── HELPERS ──
+function winPct(w, l) { const t=w+l; return t?Math.round(w/t*100):0; }
+function markerSize(n) {
+  if(n<=1)return 16; if(n<=3)return 20; if(n<=7)return 26;
+  if(n<=15)return 32; if(n<=30)return 40; if(n<=60)return 50; return 62;
+}
+function sportColor(sports) {
+  const a = Array.from(sports);
+  return a.length===1 ? SPORT_COLORS[a[0]] : MULTI_COLOR;
+}
+function choroplethColor(wins) {
+  if(wins===0)return 'rgba(60,60,60,0.15)';
+  if(wins<=2)return 'rgba(196,30,58,0.2)';
+  if(wins<=7)return 'rgba(196,30,58,0.35)';
+  if(wins<=15)return 'rgba(196,30,58,0.5)';
+  if(wins<=30)return 'rgba(196,30,58,0.65)';
+  return 'rgba(196,30,58,0.8)';
 }
 
-// ── POPUP HTML ──
-function buildPopup(cityData) {
-  const total = cityData.wins + cityData.losses;
-  const pct = winPct(cityData.wins, cityData.losses);
-
-  const sortedRecords = [...cityData.records].sort((a, b) => b.year - a.year);
-
-  const rows = sortedRecords.map(r => {
-    const result = r.win === 1 ? 'W' : 'L';
-    return `<div class="popup-team-row ${result === 'W' ? 'win' : 'loss'}">
+// ── POPUP ──
+function buildPopup(c, label) {
+  const total = c.wins + c.losses;
+  const pct = winPct(c.wins, c.losses);
+  const records = [...(c.records||[])].sort((a,b)=>b.year-a.year);
+  const sportArr = Array.from(c.sports||[]).sort();
+  const tags = sportArr.map(s=>`<span class="popup-sport-tag tag-${s}">${s.substring(0,4)}</span>`).join(' ');
+  const rows = records.map(r=>{
+    const res = r.win?'W':'L';
+    return `<div class="popup-team-row ${res==='W'?'win':'loss'}">
       <span class="popup-year">${r.year}</span>
       <span class="popup-team-name">${r.team}</span>
       <span class="popup-sport-tag tag-${r.sport}">${r.sport.substring(0,4)}</span>
-      <span class="popup-result ${result}">${result}</span>
+      <span class="popup-result ${res}">${res}</span>
     </div>`;
   }).join('');
-
-  const sportsArr = Array.from(cityData.sports).sort();
-  const sportTags = sportsArr.map(s =>
-    `<span class="popup-sport-tag tag-${s}" style="margin-right:3px">${s}</span>`
-  ).join('');
-
   return `<div class="popup-header">
-    <div class="popup-city">${cityData.city}</div>
-    <div class="popup-state">${cityData.state} &nbsp;·&nbsp; ${sportTags}</div>
+    <div class="popup-city">${label||c.city}</div>
+    <div class="popup-state">${c.state||''} ${tags}</div>
   </div>
   <div class="popup-stats">
-    <div class="popup-stat">
-      <div class="popup-stat-num">${cityData.wins}</div>
-      <div class="popup-stat-label">Titles</div>
-    </div>
-    <div class="popup-stat">
-      <div class="popup-stat-num">${cityData.losses}</div>
-      <div class="popup-stat-label">Runner-Up</div>
-    </div>
-    <div class="popup-stat">
-      <div class="popup-stat-num">${total}</div>
-      <div class="popup-stat-label">Total App.</div>
-    </div>
-    <div class="popup-stat">
-      <div class="popup-stat-num win-pct">${pct}%</div>
-      <div class="popup-stat-label">Win %</div>
-    </div>
+    <div class="popup-stat"><div class="popup-stat-num">${c.wins}</div><div class="popup-stat-label">Titles</div></div>
+    <div class="popup-stat"><div class="popup-stat-num">${c.losses}</div><div class="popup-stat-label">Runner-Up</div></div>
+    <div class="popup-stat"><div class="popup-stat-num">${total}</div><div class="popup-stat-label">Appearances</div></div>
+    <div class="popup-stat"><div class="popup-stat-num pct">${pct}%</div><div class="popup-stat-label">Win %</div></div>
   </div>
   <div class="popup-teams">${rows}</div>`;
 }
 
-// ── UPDATE MAP ──
-function updateMap() {
-  markersLayer.clearLayers();
-  const filtered = getFiltered();
+function statePopup(stateName, stateData, filtered) {
+  const records = filtered.filter(r=>r.state===stateName).sort((a,b)=>b.year-a.year);
+  const total = stateData.wins + stateData.losses;
+  const pct = winPct(stateData.wins, stateData.losses);
+  const cities = Array.from(stateData.cities);
+  const sportArr = Array.from(stateData.sports).sort();
+  const tags = sportArr.map(s=>`<span class="popup-sport-tag tag-${s}">${s.substring(0,4)}</span>`).join(' ');
+  const rows = records.slice(0,30).map(r=>{
+    const res = r.win?'W':'L';
+    return `<div class="popup-team-row ${res==='W'?'win':'loss'}">
+      <span class="popup-year">${r.year}</span>
+      <span class="popup-team-name">${r.city} ${r.team}</span>
+      <span class="popup-sport-tag tag-${r.sport}">${r.sport.substring(0,4)}</span>
+      <span class="popup-result ${res}">${res}</span>
+    </div>`;
+  }).join('');
+  return `<div class="popup-header">
+    <div class="popup-city">${stateName}</div>
+    <div class="popup-state">${cities.join(', ')} &nbsp; ${tags}</div>
+  </div>
+  <div class="popup-stats">
+    <div class="popup-stat"><div class="popup-stat-num">${stateData.wins}</div><div class="popup-stat-label">Titles</div></div>
+    <div class="popup-stat"><div class="popup-stat-num">${stateData.losses}</div><div class="popup-stat-label">Runner-Up</div></div>
+    <div class="popup-stat"><div class="popup-stat-num">${total}</div><div class="popup-stat-label">Appearances</div></div>
+    <div class="popup-stat"><div class="popup-stat-num pct">${pct}%</div><div class="popup-stat-label">Win %</div></div>
+  </div>
+  <div class="popup-teams">${rows}${records.length>30?`<div style="padding:6px 14px;font-family:IBM Plex Mono,monospace;font-size:0.6rem;color:var(--text-muted)">+${records.length-30} more — zoom in to see cities</div>`:''}</div>`;
+}
+
+// ── ZOOM STAGE ──
+function getZoomStage(z) {
+  if (z <= 5) return 'country';
+  if (z <= 7) return 'state';
+  return 'city';
+}
+
+function updateZoomBadge(z) {
+  const stage = getZoomStage(z);
+  const labels = { country:'Country View', state:'State / Province View', city:'City View' };
+  document.getElementById('zoom-label').textContent = labels[stage];
+}
+
+// ── COUNTRY LAYER ──
+function buildCountryLayer(filtered) {
+  if (countryLayer) countryLayer.remove();
+  const cData = groupByCountry(filtered);
+
+  // Simple bounding box polygons for USA and Canada
+  const USA_BOUNDS = [
+    [24.5, -124.8],[24.5,-66.9],[49.0,-66.9],[49.0,-95.0],
+    [49.0,-95.0],[49.0,-124.8],[24.5,-124.8]
+  ];
+  // We'll use circle markers for country level since we can't load GeoJSON externally
+  const countryMarkers = [
+    { name:'United States', lat:39.5, lng:-98.35, data:cData.USA },
+    { name:'Canada', lat:56.0, lng:-96.0, data:cData.Canada },
+  ];
+
+  countryLayer = L.layerGroup();
+  for (const c of countryMarkers) {
+    if (!c.data || c.data.wins+c.data.losses===0) continue;
+    const total = c.data.wins + c.data.losses;
+    const pct = winPct(c.data.wins, c.data.losses);
+    const size = Math.min(90, 50 + total * 0.06);
+    const icon = L.divIcon({
+      className:'',
+      html:`<div class="city-marker" style="
+        width:${size}px;height:${size}px;
+        background:rgba(196,30,58,0.75);
+        border:2px solid rgba(245,240,232,0.7);
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        border-radius:50%;cursor:pointer;
+        box-shadow:0 3px 12px rgba(0,0,0,0.5);
+        font-family:'IBM Plex Mono',monospace;color:var(--cream);
+      ">
+        <div style="font-size:${size>65?13:11}px;font-weight:700;line-height:1">${c.data.wins}</div>
+        <div style="font-size:9px;opacity:0.7;line-height:1.2">titles</div>
+      </div>`,
+      iconSize:[size,size], iconAnchor:[size/2,size/2]
+    });
+    const m = L.marker([c.lat, c.lng], {icon});
+    const sports = Array.from(c.data.sports).sort();
+    const tags = sports.map(s=>`<span class="popup-sport-tag tag-${s}">${s.substring(0,4)}</span>`).join(' ');
+    m.bindPopup(`<div class="popup-header">
+      <div class="popup-city">${c.name}</div>
+      <div class="popup-state">${tags}</div>
+    </div>
+    <div class="popup-stats">
+      <div class="popup-stat"><div class="popup-stat-num">${c.data.wins}</div><div class="popup-stat-label">Titles</div></div>
+      <div class="popup-stat"><div class="popup-stat-num">${c.data.losses}</div><div class="popup-stat-label">Runner-Up</div></div>
+      <div class="popup-stat"><div class="popup-stat-num">${total}</div><div class="popup-stat-label">Appearances</div></div>
+      <div class="popup-stat"><div class="popup-stat-num pct">${pct}%</div><div class="popup-stat-label">Win %</div></div>
+    </div>
+    <div style="padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--text-muted)">
+      Zoom in to explore states →
+    </div>`, {maxWidth:320,minWidth:240});
+    countryLayer.addLayer(m);
+  }
+  return countryLayer;
+}
+
+// ── STATE LAYER ──
+function buildStateLayer(filtered) {
+  if (stateLayer) stateLayer.remove();
+  const stateData = groupByState(filtered);
+  stateLayer = L.layerGroup();
+
+  // State/province centroids for markers
+  const STATE_CENTROIDS = {
+    'Massachusetts':[42.2596,-71.8083],'New York':[42.9538,-75.5268],'California':[36.7783,-119.4179],
+    'Illinois':[40.6331,-89.3985],'Pennsylvania':[41.2033,-77.1945],'Ohio':[40.4173,-82.9071],
+    'Michigan':[44.3148,-85.6024],'Texas':[31.9686,-99.9018],'Florida':[27.6648,-81.5158],
+    'Georgia':[32.1656,-82.9001],'Washington':[47.7511,-120.7401],'Oregon':[43.8041,-120.5542],
+    'Colorado':[39.5501,-105.7821],'Minnesota':[46.7296,-94.6859],'Missouri':[37.9643,-91.8318],
+    'Maryland':[39.0458,-76.6413],'Louisiana':[30.9843,-91.9623],'Indiana':[40.2672,-86.1349],
+    'Wisconsin':[43.7844,-88.7879],'Kentucky':[37.8393,-84.2700],'Tennessee':[35.5175,-86.5804],
+    'North Carolina':[35.7596,-79.0193],'New Jersey':[40.0583,-74.4057],'Oklahoma':[35.4676,-97.5164],
+    'Utah':[39.3210,-111.0937],'Nevada':[38.8026,-116.4194],'Arizona':[34.0489,-111.0937],
+    'Rhode Island':[41.5801,-71.4774],'Washington D.C.':[38.9072,-77.0369],
+    // Canada
+    'Ontario':[51.2538,-85.3232],'Quebec':[53.0,-70.0],'British Columbia':[53.7267,-127.6476],
+    'Alberta':[53.9333,-116.5765],'Manitoba':[56.4153,-98.7397],
+  };
+
+  for (const [stateName, sData] of Object.entries(stateData)) {
+    const coords = STATE_CENTROIDS[stateName];
+    if (!coords) continue;
+    const total = sData.wins + sData.losses;
+    const pct = winPct(sData.wins, sData.losses);
+    const color = sportColor(sData.sports);
+    const size = markerSize(total);
+
+    const icon = L.divIcon({
+      className:'',
+      html:`<div class="city-marker" style="
+        width:${size}px;height:${size}px;
+        background:${color};opacity:0.9;
+        border:2px solid rgba(245,240,232,0.7);
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        border-radius:50%;cursor:pointer;
+        box-shadow:0 2px 10px rgba(0,0,0,0.4);
+        font-family:'IBM Plex Mono',monospace;color:rgba(245,240,232,0.95);
+      ">
+        ${size>=26?`<div style="font-size:${size>=36?12:10}px;font-weight:700;line-height:1">${sData.wins}</div>`:''}
+        ${size>=36?`<div style="font-size:8px;opacity:0.7">W</div>`:''}
+      </div>`,
+      iconSize:[size,size], iconAnchor:[size/2,size/2]
+    });
+
+    const m = L.marker(coords, {icon});
+    m.bindPopup(statePopup(stateName, sData, filtered), {maxWidth:320,minWidth:240});
+    stateLayer.addLayer(m);
+  }
+  return stateLayer;
+}
+
+// ── CITY LAYER ──
+function buildCityLayer(filtered) {
+  if (markersLayer) markersLayer.clearLayers();
   const cities = groupByCity(filtered);
 
   for (const c of cities) {
     if (!c.lat || !c.lng) continue;
     const total = c.wins + c.losses;
     const size = markerSize(total);
-    const color = markerColor(c.sports);
-    const pct = winPct(c.wins, c.losses);
+    const color = sportColor(c.sports);
 
     const icon = L.divIcon({
-      className: '',
-      html: `<div class="city-marker" style="
-        width:${size}px; height:${size}px;
-        background:${color.fill};
-        border-color:rgba(245,240,232,${Math.min(0.9, 0.4 + c.wins * 0.02)});
-        font-size:${size < 22 ? 8 : size < 32 ? 10 : 12}px;
-        color:rgba(245,240,232,0.95);
-        border-width:${size > 30 ? 2 : 1.5}px;
-      ">${total >= 3 ? total : ''}</div>`,
-      iconSize: [size, size],
-      iconAnchor: [size/2, size/2],
+      className:'',
+      html:`<div class="city-marker" style="
+        width:${size}px;height:${size}px;
+        background:${color};
+        border:${size>30?2:1.5}px solid rgba(245,240,232,${Math.min(0.95,0.5+c.wins*0.015)});
+        display:flex;align-items:center;justify-content:center;
+        border-radius:50%;cursor:pointer;
+        box-shadow:0 2px 8px rgba(0,0,0,0.4);
+        font-family:'IBM Plex Mono',monospace;
+        font-size:${size<22?8:size<32?10:12}px;
+        color:rgba(245,240,232,0.95);font-weight:500;
+      ">${total>=3?total:''}</div>`,
+      iconSize:[size,size], iconAnchor:[size/2,size/2]
     });
 
-    const marker = L.marker([c.lat, c.lng], { icon, zIndexOffset: c.wins * 10 });
-    marker.bindPopup(buildPopup(c), { maxWidth: 320, minWidth: 240 });
-    markersLayer.addLayer(marker);
+    const m = L.marker([c.lat, c.lng], {icon, zIndexOffset:c.wins*10});
+    m.bindPopup(buildPopup(c), {maxWidth:320,minWidth:240});
+    markersLayer.addLayer(m);
+  }
+}
+
+// ── MAIN UPDATE ──
+function updateMap() {
+  const filtered = getFiltered();
+  const stage = getZoomStage(currentZoom);
+
+  // Always clear all
+  if (countryLayer) { countryLayer.remove(); countryLayer = null; }
+  if (stateLayer) { stateLayer.remove(); stateLayer = null; }
+  if (markersLayer) markersLayer.clearLayers();
+
+  if (stage === 'country') {
+    countryLayer = buildCountryLayer(filtered);
+    countryLayer.addTo(map);
+  } else if (stage === 'state') {
+    stateLayer = buildStateLayer(filtered);
+    stateLayer.addTo(map);
+  } else {
+    buildCityLayer(filtered);
   }
 
-  updateStatus(filtered, cities);
-  if (panelOpen) updatePanel(filtered, cities);
+  updateStatus(filtered, groupByCity(filtered));
+  if (panelOpen) updatePanel(filtered, groupByCity(filtered));
 }
 
-// ── STATUS BAR ──
 function updateStatus(filtered, cities) {
-  const wins = filtered.filter(r => r.win === 1).length;
-  document.getElementById('status-count').textContent = filtered.length.toLocaleString();
-  document.getElementById('status-wins').textContent = wins.toLocaleString();
-  document.getElementById('status-cities').textContent = cities.length;
-
-  const pct = winPct(wins, filtered.length - wins);
-  document.getElementById('status-extra').innerHTML =
-    `Overall win rate <strong>${pct}%</strong>`;
+  const wins = filtered.filter(r=>r.win===1).length;
+  document.getElementById('st-count').textContent = filtered.length.toLocaleString();
+  document.getElementById('st-wins').textContent = wins.toLocaleString();
+  document.getElementById('st-cities').textContent = cities.length;
+  document.getElementById('st-extra').innerHTML = `Win rate <strong>${winPct(wins,filtered.length-wins)}%</strong>`;
 }
 
-// ── SIDE PANEL ──
 function updatePanel(filtered, cities) {
-  const wins = filtered.filter(r => r.win === 1).length;
+  const wins = filtered.filter(r=>r.win===1).length;
   const losses = filtered.length - wins;
   const pct = winPct(wins, losses);
-
-  // Sport breakdown
   const sportStats = {};
   for (const r of filtered) {
-    if (!sportStats[r.sport]) sportStats[r.sport] = { wins: 0, losses: 0 };
+    if (!sportStats[r.sport]) sportStats[r.sport] = {wins:0,losses:0};
     sportStats[r.sport].wins += r.win;
     sportStats[r.sport].losses += r.lose;
   }
+  const top = [...cities].sort((a,b)=>b.wins-a.wins).slice(0,12);
 
-  // Top cities by wins
-  const sorted = [...cities].sort((a, b) => b.wins - a.wins).slice(0, 12);
+  let html = `<div class="panel-section">
+    <div class="panel-section-title">Overall Record</div>
+    <div class="stat-row"><span class="stat-row-label">Championships</span><span class="stat-row-value hi">${wins}</span></div>
+    <div class="stat-row"><span class="stat-row-label">Runner-Up</span><span class="stat-row-value">${losses}</span></div>
+    <div class="stat-row"><span class="stat-row-label">Total Appearances</span><span class="stat-row-value">${filtered.length}</span></div>
+    <div class="win-bar-wrap">
+      <div class="win-bar-label"><span>Win %</span><span>${pct}%</span></div>
+      <div class="win-bar-track"><div class="win-bar-fill" style="width:${pct}%"></div></div>
+    </div>
+  </div>`;
 
-  let html = `
-    <div class="panel-section">
-      <div class="panel-section-title">Overall Record</div>
-      <div class="stat-row">
-        <span class="stat-row-label">Championships</span>
-        <span class="stat-row-value highlight">${wins}</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-row-label">Runner-Up</span>
-        <span class="stat-row-value">${losses}</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-row-label">Total Appearances</span>
-        <span class="stat-row-value">${filtered.length}</span>
-      </div>
-      <div class="win-bar-wrap">
-        <div class="win-bar-label"><span>Win %</span><span>${pct}%</span></div>
-        <div class="win-bar-track"><div class="win-bar-fill" style="width:${pct}%"></div></div>
-      </div>
-    </div>`;
-
-  if (activeSport === 'All') {
-    html += `<div class="panel-section">
-      <div class="panel-section-title">By Sport</div>`;
-    for (const [sport, s] of Object.entries(sportStats).sort((a,b) => b[1].wins - a[1].wins)) {
-      const sp = winPct(s.wins, s.losses);
+  if (activeSport==='All') {
+    html += `<div class="panel-section"><div class="panel-section-title">By Sport</div>`;
+    for (const [sport,s] of Object.entries(sportStats).sort((a,b)=>b[1].wins-a[1].wins)) {
+      const sp = winPct(s.wins,s.losses);
       html += `<div class="stat-row">
-        <span class="stat-row-label">
-          <span class="sport-dot dot-${sport}"></span>${sport}
-        </span>
-        <span class="stat-row-value">${s.wins}W <span style="color:#666;font-size:0.65rem">${s.losses}L</span> <span style="color:var(--text-muted);font-size:0.65rem">(${sp}%)</span></span>
+        <span class="stat-row-label"><span class="sport-dot dot-${sport}"></span>${sport}</span>
+        <span class="stat-row-value">${s.wins}W <span style="color:#666;font-size:.65rem">${s.losses}L</span> <span style="color:var(--text-muted);font-size:.65rem">(${sp}%)</span></span>
       </div>`;
     }
     html += `</div>`;
   }
 
-  html += `<div class="panel-section">
-    <div class="panel-section-title">Top Cities by Championships</div>`;
-  sorted.forEach((c, i) => {
-    const tp = winPct(c.wins, c.losses);
-    const total = c.wins + c.losses;
-    html += `<div class="leaderboard-row" onclick="flyToCity(${c.lat}, ${c.lng})">
+  html += `<div class="panel-section"><div class="panel-section-title">Top Cities by Championships</div>`;
+  top.forEach((c,i)=>{
+    const total=c.wins+c.losses;
+    html += `<div class="lb-row" onclick="flyToCity(${c.lat},${c.lng})">
       <span class="lb-rank">${i+1}</span>
       <span class="lb-name">${c.city}</span>
       <span class="lb-wins">${c.wins}W</span>
-      <span class="lb-pct">${total > 0 ? tp+'%' : '—'}</span>
+      <span class="lb-pct">${total?winPct(c.wins,c.losses)+'%':'—'}</span>
     </div>`;
   });
   html += `</div>`;
-
   document.getElementById('panel-body').innerHTML = html;
-}
-
-function flyToCity(lat, lng) {
-  if (currentView !== 'map') return;
-  map.flyTo([lat, lng], 8, { duration: 0.8 });
 }
 
 // ── TABLE ──
 function renderTable() {
   const filtered = getFiltered();
-  const search = document.getElementById('table-search').value.toLowerCase();
+  const q = document.getElementById('table-search').value.toLowerCase();
+  let data = q ? filtered.filter(r=>
+    r.team.toLowerCase().includes(q)||r.city.toLowerCase().includes(q)||
+    r.state.toLowerCase().includes(q)||r.sport.toLowerCase().includes(q)
+  ) : filtered;
 
-  let data = search
-    ? filtered.filter(r =>
-        r.team.toLowerCase().includes(search) ||
-        r.city.toLowerCase().includes(search) ||
-        r.state.toLowerCase().includes(search) ||
-        r.sport.toLowerCase().includes(search)
-      )
-    : filtered;
-
-  // Sort
-  data = [...data].sort((a, b) => {
-    let av = a[sortCol], bv = b[sortCol];
-    if (typeof av === 'string') av = av.toLowerCase();
-    if (typeof bv === 'string') bv = bv.toLowerCase();
-    if (av < bv) return sortDir;
-    if (av > bv) return -sortDir;
-    return 0;
+  data = [...data].sort((a,b)=>{
+    let av=a[sortCol], bv=b[sortCol];
+    if(typeof av==='string'){av=av.toLowerCase();bv=bv.toLowerCase();}
+    return av<bv?sortDir:av>bv?-sortDir:0;
   });
 
-  const wins = data.filter(r => r.win === 1).length;
-  document.getElementById('table-stats-bar').textContent =
-    `${data.length} records · ${wins} championships`;
-
-  const tbody = document.getElementById('table-body');
-  tbody.innerHTML = data.map(r => `
+  const wins = data.filter(r=>r.win===1).length;
+  document.getElementById('table-stats-bar').textContent = `${data.length} records · ${wins} championships`;
+  document.getElementById('table-body').innerHTML = data.map(r=>`
     <tr>
       <td class="td-year">${r.year}</td>
       <td class="td-team">${r.team}</td>
       <td>${r.city}</td>
       <td>${r.state}</td>
-      <td><span class="td-sport-pill pill-${r.sport}">${r.sport}</span></td>
-      <td class="td-result ${r.win ? 'win' : 'loss'}">${r.win ? '🏆 Champion' : 'Runner-Up'}</td>
-    </tr>
-  `).join('');
+      <td><span class="td-pill pill-${r.sport}">${r.sport}</span></td>
+      <td class="td-result ${r.win?'win':'loss'}">${r.win?'🏆 Champion':'Runner-Up'}</td>
+    </tr>`).join('');
 }
 
 function sortTable(col) {
-  if (sortCol === col) { sortDir *= -1; }
-  else { sortCol = col; sortDir = col === 'year' ? -1 : 1; }
-
-  document.querySelectorAll('thead th').forEach(th => th.classList.remove('sorted'));
-  document.querySelectorAll('.sort-arrow').forEach(el => el.textContent = '↕');
-
+  sortDir = sortCol===col ? sortDir*-1 : (col==='year'?-1:1);
+  sortCol = col;
+  document.querySelectorAll('thead th').forEach(t=>t.classList.remove('sorted'));
+  document.querySelectorAll('.sa').forEach(e=>e.textContent='↕');
   const th = document.querySelector(`[onclick="sortTable('${col}')"]`);
-  if (th) {
-    th.classList.add('sorted');
-    th.querySelector('.sort-arrow').textContent = sortDir === 1 ? '↑' : '↓';
-  }
+  if(th){th.classList.add('sorted');th.querySelector('.sa').textContent=sortDir===1?'↑':'↓';}
   renderTable();
 }
 
 // ── CONTROLS ──
 function setSport(sport) {
   activeSport = sport;
-  document.querySelectorAll('.sport-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.sport === sport);
-  });
+  document.querySelectorAll('.sport-btn').forEach(b=>b.classList.toggle('active',b.dataset.sport===sport));
   refresh();
 }
 
 function updateYears() {
-  let s = parseInt(document.getElementById('year-start').value);
-  let e = parseInt(document.getElementById('year-end').value);
-  if (s > e) [s, e] = [e, s];
-  yearStart = s; yearEnd = e;
-  document.getElementById('year-display').textContent = `${s} – ${e}`;
+  let s=parseInt(document.getElementById('year-start').value);
+  let e=parseInt(document.getElementById('year-end').value);
+  if(s>e)[s,e]=[e,s];
+  yearStart=s; yearEnd=e;
+  document.getElementById('year-display').textContent=`${s} – ${e}`;
   refresh();
 }
 
 function setView(v) {
   currentView = v;
-  document.getElementById('map').style.display = v === 'map' ? 'block' : 'none';
-  document.getElementById('table-view').classList.toggle('visible', v === 'table');
-  document.getElementById('btn-map').classList.toggle('active', v === 'map');
-  document.getElementById('btn-table').classList.toggle('active', v === 'table');
-  document.getElementById('side-panel').classList.toggle('hidden', v === 'table');
-
-  if (v === 'table') renderTable();
-  else if (v === 'map') { setTimeout(() => map.invalidateSize(), 50); }
+  document.getElementById('map').style.display = v==='map'?'block':'none';
+  document.getElementById('table-view').classList.toggle('visible', v==='table');
+  document.getElementById('btn-map').classList.toggle('active', v==='map');
+  document.getElementById('btn-table').classList.toggle('active', v==='table');
+  document.getElementById('side-panel').classList.toggle('hidden', v==='table');
+  document.getElementById('map-legend').style.display = v==='map'?'block':'none';
+  if(v==='table') renderTable();
+  else setTimeout(()=>map.invalidateSize(),50);
 }
 
 function togglePanel() {
   panelOpen = !panelOpen;
-  document.getElementById('side-panel').classList.toggle('hidden', !panelOpen);
-  setTimeout(() => map.invalidateSize(), 260);
-  if (panelOpen) updatePanel(getFiltered(), groupByCity(getFiltered()));
+  document.getElementById('side-panel').classList.toggle('hidden',!panelOpen);
+  setTimeout(()=>map.invalidateSize(),260);
+  if(panelOpen) updatePanel(getFiltered(),groupByCity(getFiltered()));
+}
+
+function flyToCity(lat,lng) {
+  if(currentView!=='map')return;
+  setView('map');
+  map.flyTo([lat,lng],8,{duration:0.8});
 }
 
 function refresh() {
   updateMap();
-  if (currentView === 'table') renderTable();
+  if(currentView==='table') renderTable();
 }
 
-// ── INIT MAP ──
+// ── INIT ──
 function initMap() {
-  map = L.map('map', {
-    center: [39.5, -95.0],
-    zoom: 4,
-    minZoom: 3,
-    maxZoom: 12,
-    zoomControl: true,
-  });
+  map = L.map('map', { center:[45,-98], zoom:4, minZoom:3, maxZoom:13, zoomControl:true });
 
-  // Light, reliable map (will always work)
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
+    attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+    maxZoom:19,
+    className:'map-tiles'
   }).addTo(map);
 
-
   markersLayer = L.layerGroup().addTo(map);
+  currentZoom = map.getZoom();
 
-  setTimeout(() => {
-    document.getElementById('loading').style.display = 'none';
+  map.on('zoomend', ()=>{
+    currentZoom = map.getZoom();
+    updateZoomBadge(currentZoom);
     updateMap();
-    updatePanel(getFiltered(), groupByCity(getFiltered()));
-  }, 400);
+  });
+
+  setTimeout(()=>{
+    document.getElementById('loading').style.display='none';
+    updateZoomBadge(currentZoom);
+    updateMap();
+    updatePanel(getFiltered(),groupByCity(getFiltered()));
+  }, 500);
 }
 
 window.addEventListener('load', initMap);
