@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Championship Geography</title>
+<title>Champography</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -177,25 +177,61 @@
   .loading-fill { height:100%; background:var(--red); border-radius:2px; animation:lp 1s ease-in-out infinite alternate; }
   @keyframes lp { from{width:20%} to{width:90%} }
 
+  /* MOBILE STATS BOTTOM SHEET */
+  .mobile-sheet-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:800; }
+  .mobile-sheet-overlay.open { display:block; }
+  .mobile-sheet { position:fixed; bottom:0; left:0; right:0; background:var(--charcoal); border-top:2px solid var(--red); border-radius:12px 12px 0 0; z-index:801; transform:translateY(100%); transition:transform 0.3s ease; max-height:78vh; display:flex; flex-direction:column; }
+  .mobile-sheet.open { transform:translateY(0); }
+  .mobile-sheet-handle { width:36px; height:4px; background:var(--charcoal-light); border-radius:2px; margin:10px auto 0; flex-shrink:0; }
+  .mobile-sheet-header { display:flex; justify-content:space-between; align-items:center; padding:10px 16px 8px; flex-shrink:0; border-bottom:1px solid var(--charcoal-light); }
+  .mobile-sheet-title { font-family:'Playfair Display',serif; font-size:0.95rem; color:var(--cream); }
+  .mobile-sheet-close { background:none; border:none; color:var(--text-muted); font-size:1.1rem; cursor:pointer; padding:2px 6px; }
+  .mobile-sheet-body { overflow-y:auto; padding:12px 16px; flex:1; }
+  .mobile-sheet-body::-webkit-scrollbar { width:3px; }
+  .mobile-sheet-body::-webkit-scrollbar-thumb { background:var(--red); }
+
+  /* MOBILE LEGEND TOGGLE */
+  .legend-toggle-btn { display:none; position:absolute; bottom:30px; left:12px; z-index:501; background:rgba(20,20,20,0.9); border:1px solid var(--charcoal-light); border-radius:3px; color:var(--text-muted); font-family:'IBM Plex Mono',monospace; font-size:0.65rem; padding:6px 10px; cursor:pointer; letter-spacing:0.05em; }
+  .legend-toggle-btn:hover { color:var(--cream); }
+
   @media(max-width:768px) {
     header h1 { font-size:1.1rem; } .header-subtitle { display:none; }
-    .toolbar { gap:4px; padding:4px 10px; } .toolbar-group { padding:4px 10px 4px 0; margin-right:8px; }
+    .toolbar { gap:4px; padding:4px 10px; overflow-x:visible; flex-wrap:wrap; }
+    .toolbar-group { padding:4px 10px 4px 0; margin-right:8px; flex-shrink:1; min-width:0; }
     .sport-btn { padding:3px 7px; font-size:0.62rem; } .toolbar-label { display:none; }
-    #side-panel { display:none; } .map-legend { display:none; }
+    #side-panel { display:none !important; }
+
+    /* Legend: hide by default, show only when .legend-visible, keep compact */
+    .map-legend { display:none; bottom:72px; left:8px; right:8px; min-width:unset; max-height:45vh; overflow-y:auto; pointer-events:auto; }
+    .map-legend.legend-visible { display:block; }
+    .legend-toggle-btn { display:block; bottom:72px; }
+
+    /* Table: hide State column, compact rows */
+    .col-state { display:none; }
+    table { font-size:0.76rem; }
+    thead th { padding:8px 8px; font-size:0.58rem; }
+    tbody td { padding:6px 8px; }
+    .table-wrap { overflow-x:hidden; }
+    .table-controls { padding:8px 12px; gap:8px; }
+    .table-search { font-size:0.72rem; }
+
+    /* Status bar: compact */
+    .status-bar { padding:3px 10px; gap:10px; overflow-x:auto; }
+    .status-item { font-size:0.58rem; white-space:nowrap; }
   }
 </style>
 </head>
 <body>
 
 <div id="loading">
-  <h2>Championship <span style="color:var(--red-light)">Geography</span></h2>
+  <h2>Champ<span style="color:var(--red-light)">ography</span></h2>
   <div class="loading-bar"><div class="loading-fill"></div></div>
-  <p>Loading 914 championship records…</p>
+  <p>Loading championship records…</p>
 </div>
 
 <header>
   <div class="header-left">
-    <h1>Championship <span>Geography</span></h1>
+    <h1>Champ<span>ography</span></h1>
     <span class="header-subtitle">1876 – 2024 · 4 Major Sports</span>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
@@ -242,7 +278,7 @@
           <th onclick="sortTable('year')" class="sorted">Year<span class="sa" id="sa-year">↓</span></th>
           <th onclick="sortTable('team')">Team<span class="sa" id="sa-team">↕</span></th>
           <th onclick="sortTable('city')">City<span class="sa" id="sa-city">↕</span></th>
-          <th onclick="sortTable('state')">State<span class="sa" id="sa-state">↕</span></th>
+          <th onclick="sortTable('state')" class="col-state">State<span class="sa" id="sa-state">↕</span></th>
           <th onclick="sortTable('sport')">Sport<span class="sa" id="sa-sport">↕</span></th>
           <th onclick="sortTable('win')">Result<span class="sa" id="sa-win">↕</span></th>
         </tr></thead>
@@ -260,12 +296,7 @@
   </div>
 </div>
 
-<div class="status-bar">
-  <span class="status-item">Showing <strong id="st-count">—</strong> appearances</span>
-  <span class="status-item"><strong id="st-wins">—</strong> championships</span>
-  <span class="status-item"><strong id="st-cities">—</strong> cities</span>
-  <span class="status-item" id="st-extra"></span>
-</div>
+<!-- status bar removed per user request -->
 
 <div class="map-legend" id="map-legend">
   <div class="legend-title">Sport Color</div>
@@ -273,12 +304,26 @@
   <div class="legend-row"><span class="legend-dot" style="background:var(--sport-football)"></span><span class="legend-label">Football</span></div>
   <div class="legend-row"><span class="legend-dot" style="background:var(--sport-basketball)"></span><span class="legend-label">Basketball</span></div>
   <div class="legend-row"><span class="legend-dot" style="background:var(--sport-hockey)"></span><span class="legend-label">Hockey</span></div>
-  <div class="legend-row"><span class="legend-dot" style="background:#8B7355"></span><span class="legend-label">Multi-sport</span></div>
+  <div class="legend-row"><span class="legend-dot" style="background:conic-gradient(#C41E3A 0 25%, #2B5329 25% 50%, #D4500A 50% 75%, #1A3A5C 75% 100%)"></span><span class="legend-label">Mixed sports</span></div>
   <hr class="legend-hr">
   <div class="legend-title">Zoom Stages</div>
-  <div class="legend-stage">Zoom 3–4: <span>Country</span></div>
-  <div class="legend-stage">Zoom 5–6: <span>State / Province</span></div>
-  <div class="legend-stage">Zoom 7+: <span>City</span></div>
+  <div class="legend-stage">Zoom 1–2: <span>Country</span></div>
+  <div class="legend-stage">Zoom 3–4: <span>State / Province</span></div>
+  <div class="legend-stage">Zoom 5+: <span>City</span></div>
+</div>
+
+<!-- Mobile legend toggle -->
+<button class="legend-toggle-btn" id="legend-toggle-btn" onclick="toggleMobileLegend()">⬡ Legend</button>
+
+<!-- Mobile stats bottom sheet -->
+<div class="mobile-sheet-overlay" id="mobile-sheet-overlay" onclick="closeMobileSheet()"></div>
+<div class="mobile-sheet" id="mobile-sheet">
+  <div class="mobile-sheet-handle"></div>
+  <div class="mobile-sheet-header">
+    <span class="mobile-sheet-title">Overview</span>
+    <button class="mobile-sheet-close" onclick="closeMobileSheet()">✕</button>
+  </div>
+  <div class="mobile-sheet-body" id="mobile-sheet-body"></div>
 </div>
 
 <script src="data.js"></script>
@@ -288,7 +333,7 @@ let activeSport = 'All', yearStart = 1876, yearEnd = 2024;
 let currentView = 'map', panelOpen = true;
 let sortCol = 'year', sortDir = -1;
 let map, markersLayer, stateLayer, countryLayer;
-let currentZoom = 4;
+let currentZoom = 2;
 
 const SPORT_COLORS = {
   Baseball:   '#C41E3A', Football:   '#2B5329',
@@ -338,19 +383,22 @@ function groupByState(records) {
   const m = {};
   for (const r of records) {
     const s = r.state;
-    if (!m[s]) m[s] = { state:s, wins:0, losses:0, sports:new Set(), cities:new Set() };
+    if (!m[s]) m[s] = { state:s, wins:0, losses:0, sports:new Set(), sportCounts:{Baseball:0,Football:0,Basketball:0,Hockey:0}, cities:new Set() };
     m[s].wins += r.win; m[s].losses += r.lose;
-    m[s].sports.add(r.sport); m[s].cities.add(r.city);
+    m[s].sports.add(r.sport); m[s].sportCounts[r.sport] += 1; m[s].cities.add(r.city);
   }
   return m;
 }
 
 function groupByCountry(records) {
-  const m = { USA:{wins:0,losses:0,sports:new Set(),states:new Set()}, Canada:{wins:0,losses:0,sports:new Set(),states:new Set()} };
+  const m = {
+    USA:{wins:0,losses:0,sports:new Set(),sportCounts:{Baseball:0,Football:0,Basketball:0,Hockey:0},states:new Set()},
+    Canada:{wins:0,losses:0,sports:new Set(),sportCounts:{Baseball:0,Football:0,Basketball:0,Hockey:0},states:new Set()}
+  };
   for (const r of records) {
     const c = CA_PROVINCES.has(r.state) ? 'Canada' : 'USA';
     m[c].wins += r.win; m[c].losses += r.lose;
-    m[c].sports.add(r.sport); m[c].states.add(r.state);
+    m[c].sports.add(r.sport); m[c].sportCounts[r.sport] += 1; m[c].states.add(r.state);
   }
   return m;
 }
@@ -364,6 +412,28 @@ function markerSize(n) {
 function sportColor(sports) {
   const a = Array.from(sports);
   return a.length===1 ? SPORT_COLORS[a[0]] : MULTI_COLOR;
+}
+function mixedSportBackground(counts) {
+  const entries = Object.entries(counts).filter(([,count]) => count > 0);
+  if (entries.length === 1) return SPORT_COLORS[entries[0][0]];
+  const total = entries.reduce((sum, [,count]) => sum + count, 0);
+  let offset = 0;
+  const stops = entries.map(([sport, count]) => {
+    const pct = count / total * 100;
+    const start = offset;
+    offset += pct;
+    return `${SPORT_COLORS[sport]} ${start}% ${offset}%`;
+  });
+  return `conic-gradient(${stops.join(', ')})`;
+}
+function markerBackground(item) {
+  if (item.records) {
+    const counts = {Baseball:0,Football:0,Basketball:0,Hockey:0};
+    for (const r of item.records) if (counts[r.sport] !== undefined) counts[r.sport] += 1;
+    return mixedSportBackground(counts);
+  }
+  if (item.sportCounts) return mixedSportBackground(item.sportCounts);
+  return sportColor(item.sports || new Set());
 }
 function choroplethColor(wins) {
   if(wins===0)return 'rgba(60,60,60,0.15)';
@@ -434,8 +504,8 @@ function statePopup(stateName, stateData, filtered) {
 
 // ── ZOOM STAGE ──
 function getZoomStage(z) {
-  if (z <= 5) return 'country';
-  if (z <= 7) return 'state';
+  if (z <= 3) return 'country';
+  if (z <= 5) return 'state';
   return 'city';
 }
 
@@ -467,16 +537,17 @@ function buildCountryLayer(filtered) {
     const total = c.data.wins + c.data.losses;
     const pct = winPct(c.data.wins, c.data.losses);
     const size = Math.min(90, 50 + total * 0.06);
+    const background = markerBackground(c.data);
     const icon = L.divIcon({
       className:'',
       html:`<div class="city-marker" style="
         width:${size}px;height:${size}px;
-        background:rgba(196,30,58,0.75);
+        background:${background};
         border:2px solid rgba(245,240,232,0.7);
         display:flex;flex-direction:column;align-items:center;justify-content:center;
         border-radius:50%;cursor:pointer;
         box-shadow:0 3px 12px rgba(0,0,0,0.5);
-        font-family:'IBM Plex Mono',monospace;color:var(--cream);
+        font-family:'IBM Plex Mono',monospace;color:rgba(245,240,232,0.95);
       ">
         <div style="font-size:${size>65?13:11}px;font-weight:700;line-height:1">${c.data.wins}</div>
         <div style="font-size:9px;opacity:0.7;line-height:1.2">titles</div>
@@ -532,14 +603,14 @@ function buildStateLayer(filtered) {
     if (!coords) continue;
     const total = sData.wins + sData.losses;
     const pct = winPct(sData.wins, sData.losses);
-    const color = sportColor(sData.sports);
+    const background = markerBackground(sData);
     const size = markerSize(total);
 
     const icon = L.divIcon({
       className:'',
       html:`<div class="city-marker" style="
         width:${size}px;height:${size}px;
-        background:${color};opacity:0.9;
+        background:${background};
         border:2px solid rgba(245,240,232,0.7);
         display:flex;flex-direction:column;align-items:center;justify-content:center;
         border-radius:50%;cursor:pointer;
@@ -562,31 +633,36 @@ function buildStateLayer(filtered) {
 // ── CITY LAYER ──
 function buildCityLayer(filtered) {
   if (markersLayer) markersLayer.clearLayers();
-  const cities = groupByCity(filtered);
+  const cities = groupByCity(filtered).sort((a,b)=> (b.wins + b.losses) - (a.wins + a.losses));
 
   for (const c of cities) {
     if (!c.lat || !c.lng) continue;
     const total = c.wins + c.losses;
     const size = markerSize(total);
-    const color = sportColor(c.sports);
+    const isMixed = c.sports.size > 1;
+    const background = isMixed ? markerBackground(c) : sportColor(c.sports);
+    const borderColor = isMixed ? 'rgba(255,255,255,0.9)' : `rgba(245,240,232,${Math.min(0.95,0.5+c.wins*0.015)})`;
+    const textColor = 'rgba(245,240,232,0.95)';
+    const zIndex = 100 - size;
 
     const icon = L.divIcon({
       className:'',
       html:`<div class="city-marker" style="
         width:${size}px;height:${size}px;
-        background:${color};
-        border:${size>30?2:1.5}px solid rgba(245,240,232,${Math.min(0.95,0.5+c.wins*0.015)});
+        background:${background};
+        border:${size>30?2:1.5}px solid ${borderColor};
         display:flex;align-items:center;justify-content:center;
         border-radius:50%;cursor:pointer;
         box-shadow:0 2px 8px rgba(0,0,0,0.4);
         font-family:'IBM Plex Mono',monospace;
         font-size:${size<22?8:size<32?10:12}px;
-        color:rgba(245,240,232,0.95);font-weight:500;
+        color:${textColor};font-weight:500;
+        text-shadow:0 0 2px rgba(255,255,255,0.7);
       ">${total>=3?total:''}</div>`,
       iconSize:[size,size], iconAnchor:[size/2,size/2]
     });
 
-    const m = L.marker([c.lat, c.lng], {icon, zIndexOffset:c.wins*10});
+    const m = L.marker([c.lat, c.lng], {icon, zIndexOffset:zIndex});
     m.bindPopup(buildPopup(c), {maxWidth:320,minWidth:240});
     markersLayer.addLayer(m);
   }
@@ -617,6 +693,8 @@ function updateMap() {
 }
 
 function updateStatus(filtered, cities) {
+  const countEl = document.getElementById('st-count');
+  if (!countEl) return; // Status bar removed in this layout
   const wins = filtered.filter(r=>r.win===1).length;
   document.getElementById('st-count').textContent = filtered.length.toLocaleString();
   document.getElementById('st-wins').textContent = wins.toLocaleString();
@@ -695,7 +773,7 @@ function renderTable() {
       <td class="td-year">${r.year}</td>
       <td class="td-team">${r.team}</td>
       <td>${r.city}</td>
-      <td>${r.state}</td>
+      <td class="col-state">${r.state}</td>
       <td><span class="td-pill pill-${r.sport}">${r.sport}</span></td>
       <td class="td-result ${r.win?'win':'loss'}">${r.win?'🏆 Champion':'Runner-Up'}</td>
     </tr>`).join('');
@@ -734,16 +812,117 @@ function setView(v) {
   document.getElementById('btn-map').classList.toggle('active', v==='map');
   document.getElementById('btn-table').classList.toggle('active', v==='table');
   document.getElementById('side-panel').classList.toggle('hidden', v==='table');
-  document.getElementById('map-legend').style.display = v==='map'?'block':'none';
+  const legend = document.getElementById('map-legend');
+  const legendBtn = document.getElementById('legend-toggle-btn');
+  if (v === 'map') {
+    // Remove any forced inline hide so CSS + classes control visibility
+    legend.style.display = '';
+    // On mobile, ensure the legend/button reflect the "legend-visible" class
+    if (window.innerWidth <= 768) {
+      const visible = legend.classList.contains('legend-visible');
+      legend.style.display = visible ? 'block' : 'none';
+      if (legendBtn) legendBtn.textContent = visible ? '✕ Legend' : '⬡ Legend';
+    } else {
+      // Desktop: always show legend (no mobile toggle)
+      legend.style.display = 'block';
+    }
+    // Show mobile legend toggle button only when in map view and on small screens
+    if (legendBtn) {
+      if (window.innerWidth <= 768) legendBtn.style.display = 'block';
+      else legendBtn.style.display = '';
+    }
+  } else {
+    // Hide legend and reset mobile-visible class to keep toggle state consistent
+    legend.style.display = 'none';
+    legend.classList.remove('legend-visible');
+    if (legendBtn) {
+      legendBtn.textContent = '⬡ Legend';
+      // Hide button when not on map view
+      legendBtn.style.display = 'none';
+    }
+  }
+
   if(v==='table') renderTable();
   else setTimeout(()=>map.invalidateSize(),50);
 }
 
 function togglePanel() {
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile) {
+    openMobileSheet();
+    return;
+  }
   panelOpen = !panelOpen;
   document.getElementById('side-panel').classList.toggle('hidden',!panelOpen);
   setTimeout(()=>map.invalidateSize(),260);
   if(panelOpen) updatePanel(getFiltered(),groupByCity(getFiltered()));
+}
+
+function openMobileSheet() {
+  const filtered = getFiltered();
+  const cities = groupByCity(filtered);
+  // Reuse updatePanel logic but target mobile sheet body
+  const wins = filtered.filter(r=>r.win===1).length;
+  const losses = filtered.length - wins;
+  const pct = winPct(wins, losses);
+  const sportStats = {};
+  for (const r of filtered) {
+    if (!sportStats[r.sport]) sportStats[r.sport] = {wins:0,losses:0};
+    sportStats[r.sport].wins += r.win;
+    sportStats[r.sport].losses += r.lose;
+  }
+  const top = [...cities].sort((a,b)=>b.wins-a.wins).slice(0,12);
+  let html = `<div class="panel-section">
+    <div class="panel-section-title">Overall Record</div>
+    <div class="stat-row"><span class="stat-row-label">Championships</span><span class="stat-row-value hi">${wins}</span></div>
+    <div class="stat-row"><span class="stat-row-label">Runner-Up</span><span class="stat-row-value">${losses}</span></div>
+    <div class="stat-row"><span class="stat-row-label">Total Appearances</span><span class="stat-row-value">${filtered.length}</span></div>
+    <div class="win-bar-wrap">
+      <div class="win-bar-label"><span>Win %</span><span>${pct}%</span></div>
+      <div class="win-bar-track"><div class="win-bar-fill" style="width:${pct}%"></div></div>
+    </div>
+  </div>`;
+  if (activeSport==='All') {
+    html += `<div class="panel-section"><div class="panel-section-title">By Sport</div>`;
+    for (const [sport,s] of Object.entries(sportStats).sort((a,b)=>b[1].wins-a[1].wins)) {
+      const sp = winPct(s.wins,s.losses);
+      html += `<div class="stat-row">
+        <span class="stat-row-label"><span class="sport-dot dot-${sport}"></span>${sport}</span>
+        <span class="stat-row-value">${s.wins}W <span style="color:#666;font-size:.65rem">${s.losses}L</span> <span style="color:var(--text-muted);font-size:.65rem">(${sp}%)</span></span>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  html += `<div class="panel-section"><div class="panel-section-title">Top Cities by Championships</div>`;
+  top.forEach((c,i)=>{
+    const total=c.wins+c.losses;
+    html += `<div class="lb-row" onclick="flyToCity(${c.lat},${c.lng});closeMobileSheet()">
+      <span class="lb-rank">${i+1}</span>
+      <span class="lb-name">${c.city}</span>
+      <span class="lb-wins">${c.wins}W</span>
+      <span class="lb-pct">${total?winPct(c.wins,c.losses)+'%':'—'}</span>
+    </div>`;
+  });
+  html += `</div>`;
+  document.getElementById('mobile-sheet-body').innerHTML = html;
+  document.getElementById('mobile-sheet-overlay').classList.add('open');
+  document.getElementById('mobile-sheet').classList.add('open');
+}
+
+function closeMobileSheet() {
+  document.getElementById('mobile-sheet-overlay').classList.remove('open');
+  document.getElementById('mobile-sheet').classList.remove('open');
+}
+
+function toggleMobileLegend() {
+  const legend = document.getElementById('map-legend');
+  const btn = document.getElementById('legend-toggle-btn');
+  const isVisible = legend.classList.toggle('legend-visible');
+  btn.textContent = isVisible ? '✕ Legend' : '⬡ Legend';
+  // Position legend above the button
+  legend.style.bottom = '104px';
+  // Keep inline display in sync so setView and the toggle don't conflict
+  legend.style.display = isVisible ? 'block' : 'none';
 }
 
 function flyToCity(lat,lng) {
@@ -761,8 +940,10 @@ function refresh() {
 function initMap() {
   map = L.map('map', { center:[45,-98], zoom:4, minZoom:3, maxZoom:13, zoomControl:true });
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+// Use Carto Positron tiles which use English place names for labels
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors © <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd',
     maxZoom:19,
     className:'map-tiles'
   }).addTo(map);
