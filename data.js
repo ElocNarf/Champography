@@ -1,4 +1,12 @@
 const CHAMPIONSHIPS = [
+    {"year":2025,"group":null,"state":"Oklahoma","city":"Oklahoma City","location":"Oklahoma City","team":"Thunder","win":1,"lose":0,"sport":"Basketball","lat":35.4676,"lng":-97.5164},
+    {"year":2025,"group":null,"state":"Indiana","city":"Indianapolis","location":"Indiana","team":"Pacers","win":0,"lose":1,"sport":"Basketball","lat":39.7684,"lng":-86.1581},
+    {"year":2025,"group":null,"state":"Washington","city":"Seattle","location":"Seattle","team":"Seahawks","win":1,"lose":0,"sport":"Football","lat":47.6062,"lng":-122.3321},
+    {"year":2025,"group":null,"state":"Massachusetts","city":"Boston","location":"New England","team":"Patriots","win":0,"lose":1,"sport":"Football","lat":42.3601,"lng":-71.0589},
+    {"year":2025,"group":null,"state":"California","city":"Los Angeles","location":"Los Angeles","team":"Dodgers","win":1,"lose":0,"sport":"Baseball","lat":34.0522,"lng":-118.2437},
+    {"year":2025,"group":null,"state":"Ontario","city":"Toronto","location":"Toronto","team":"Blue Jays","win":0,"lose":1,"sport":"Baseball","lat":43.6532,"lng":-79.3832},
+    {"year":2025,"group":null,"state":"Florida","city":"Miami","location":"Florida","team":"Panthers","win":1,"lose":0,"sport":"Hockey","lat":25.7617,"lng":-80.1918},
+    {"year":2025,"group":null,"state":"Alberta","city":"Edmonton","location":"Edmonton","team":"Oilers","win":0,"lose":1,"sport":"Hockey","lat":53.5461,"lng":-113.4938},
     {"year":2024,"group":null,"state":"Massachusetts","city":"Boston","location":"Boston","team":"Celtics","win":1,"lose":0,"sport":"Basketball","lat":42.3601,"lng":-71.0589},
     {"year":2023,"group":null,"state":"Colorado","city":"Denver","location":"Denver","team":"Nuggets","win":1,"lose":0,"sport":"Basketball","lat":39.7392,"lng":-104.9903},
     {"year":2022,"group":null,"state":"California","city":"San Francisco","location":"Golden State","team":"Warriors","win":1,"lose":0,"sport":"Basketball","lat":37.7749,"lng":-122.4194},

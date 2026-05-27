@@ -232,7 +232,7 @@
 <header>
   <div class="header-left">
     <h1>Champ<span>ography</span></h1>
-    <span class="header-subtitle">1876 – 2024 · 4 Major Sports</span>
+    <span class="header-subtitle">1876 – 2025 · 4 Major Sports</span>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
     <button class="view-btn active" id="btn-map" onclick="setView('map')">🗺 Map</button>
@@ -252,9 +252,9 @@
   <div class="toolbar-group">
     <span class="toolbar-label">Years</span>
     <div class="year-range">
-      <input type="range" id="year-start" min="1876" max="2024" value="1876" oninput="updateYears()">
-      <span class="year-display" id="year-display">1876 – 2024</span>
-      <input type="range" id="year-end" min="1876" max="2024" value="2024" oninput="updateYears()">
+      <input type="range" id="year-start" min="1876" max="2025" value="1876" oninput="updateYears()">
+      <span class="year-display" id="year-display">1876 – 2025</span>
+      <input type="range" id="year-end" min="1876" max="2025" value="2025" oninput="updateYears()">
     </div>
   </div>
   <div class="toolbar-group" style="margin-left:auto;border-right:none;">
@@ -329,9 +329,9 @@
 <script src="data.js"></script>
 <script>
 // ── STATE ──
-let activeSport = 'All', yearStart = 1876, yearEnd = 2024;
+let activeSport = 'All', yearStart = 1876, yearEnd = 2025;
 let currentView = 'map', panelOpen = true;
-let sortCol = 'year', sortDir = -1;
+let sortCol = 'year', sortDir = 1;
 let map, markersLayer, stateLayer, countryLayer;
 let currentZoom = 2;
 
